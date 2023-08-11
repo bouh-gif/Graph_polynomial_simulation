@@ -9,7 +9,6 @@ from networkx.algorithms.flow import minimum_cut
 import matplotlib.pyplot as plt
 
 
-
 def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
@@ -82,7 +81,7 @@ all_min_cuts = find_all_minimum_cuts(G, source=s_node, target=t_node, capacity_k
 print("All possible sets of edges that form the minimum cut:")
 K = [] # list of all cut sets
 L = [] # List of all minimal cut sets
-# M = [] # List of all minimum cut sets
+M = [] # List of all minimum cut sets
 for min_cut_set in all_min_cuts:
     K.append(min_cut_set)
     print(min_cut_set)
@@ -114,6 +113,16 @@ for min_cut_set in all_min_cuts:
     # If edge_combination is not a cut-set for every member of list_edge_combination, add min_cut_set to L :
     if flag_is_present == 0 :
         L.append(min_cut_set)
+# Create collection of minimum cut-sets M : a minimum cut-set is a cut-set that is of minimum size
+minimum_size = 100000000000000000 #big value, will be replaced when entering below for loop
+for cut_set in L:
+    temp_size = len(cut_set)
+    if temp_size < minimum_size :
+        minimum_size = temp_size
+for cut_set in L:
+    if len(cut_set) == minimum_size:
+        M.append(cut_set)
+    
 print("Here is K the collection of all s-t separating cut-sets: a cut-set is a subset of edges whose removal from the network disconnects nodes s and node t  ")
 for cut_set in K:
     # K.append(min_cut_set)
@@ -122,6 +131,28 @@ print("Here is L the collection of all minimal cut-sets in the graph : a minimal
 for minimal_cut_set in L:
     # K.append(min_cut_set)
     print(minimal_cut_set)
+print("Here is M the collection of all minimum cut-sets in the graph : a minimum cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set and is of minimum size : ")
+for minimum_cut_set in M:
+    # K.append(min_cut_set)
+    print(minimum_cut_set)
+
+number_of_nodes = G.number_of_nodes() # noted n in Kschischang's paper
+minimum_cut_size = len(M[0]) # noted m in Kschischang's paper
+
+# Finding coefficients for A(x) in reliability polynomial : Am = number of cut-sets of size m, Am+1 = number of cut-sets of size m+1 etc...
+# Iterating over collection K
+temp_list_of_cut_set_sizes = []
+for cut_set in K:
+    # get size of cut-set and store it if not already stored
+    temp_list_of_cut_set_sizes.append(len(cut_set))
+# eliminate duplicates and order list in ascending order
+list_of_cut_set_sizes = sorted(set(temp_list_of_cut_set_sizes))
+
+    
+
+
+
+
 # print("Set of edges that, if removed from the graph, will disconnect it : ",(minimum_st_edge_cut(G, s_node, t_node)))
 # print("The value of the minimum cut : ", cut_value)
 # print("Two sets of nodes that define the minimum cut : ", reachable, " and ",  non_reachable)
