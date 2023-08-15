@@ -7,6 +7,63 @@ from networkx.algorithms.connectivity import minimum_edge_cut
 from networkx.algorithms.flow import build_residual_network
 from networkx.algorithms.flow import minimum_cut
 import matplotlib.pyplot as plt
+from collections import Counter
+import sympy
+import numpy
+import matplotlib.pyplot as plt
+
+
+# Class of function for polynomial evaluation :
+class OutagePolynomial(sympy.Function):
+  @classmethod
+  # defining subclass function with 'eval()' class method
+  def eval(cls, p, m, n, coefs):
+    result = []
+    for element in p:
+        # Core of the function : the algebraic expression
+        # m=1 # size of any minimum cut-set (see collection M)
+        # n=3 # number of edges
+        # #values of coefficients A_i, given by the number of cut-sets of size i, with i between m and n included
+        # coefs = [1, 3, 1]
+        # changement de variable : x = p/(1-p) et p = element
+        x = element/(1.0-element)
+
+        index = list(range(m, n+1))
+        sum=0
+        for  i in index:
+            # Evaluate sum = A(x) = A(p/(1-p)) :
+            A_i = coefs[i-1]
+            # sum = sum + A_i * pow(x, i)
+            sum = sum + A_i*(pow(element, i))*(pow(1-element, n-i))
+        # Evaluate O(p)
+        # result = pow((1.0-p), n) * sum
+
+        result.append(sum)
+    return result
+  @classmethod
+  # defining subclass function with 'eval()' class method
+  def plot(cls, x, y):
+    ### PLOT
+    # convert y-axis to Logarithmic scale
+    plt.yscale("log")
+    # plotting the points
+    plt.plot(x, y)
+
+    # naming the x axis
+    plt.xlabel('p')
+    # naming the y axis
+    plt.ylabel('O(p)')
+
+    # giving a title to my graph
+    plt.title('Reliability polynomial O(p)')
+
+    # Add gridlines to the plot
+    plt.grid(visible=True, which='major', linestyle='-')
+    plt.grid(visible=True, which='minor', linestyle='--')
+    # grid(b=True, which='major', color='b', linestyle='-')
+
+    # Save the file and show the figure
+    plt.savefig("plotted_polynomial.png")
 
 
 def powerset(iterable):
@@ -38,10 +95,15 @@ G = nx.MultiDiGraph(directed=True)
 #   Graph 1 :
 # G.add_edges_from([(1, 2, {'capacity': 1.0}), (2, 3, {'capacity': 1.0}), (2, 4, {'capacity': 1.0}), (4, 5, {'capacity': 1.0})])
 #   Graph 2 :
+# Nodes 
 G.add_node(1, subset='source')
 G.add_node(2, subset='others')
 G.add_node(3, subset='target')
-G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+s_node = 1
+t_node = 3
+# Edges 
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
 # G.add_edge(1, 2, 2, capacity=2.0)  # Add another edge with a different key
 # print(list(G.nodes))
 # print(list(G.edges))
@@ -53,8 +115,7 @@ G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), 
 ### CALL TO FLOW COMPUTING FUNCTIONS
 # H = build_auxiliary_node_connectivity(G)
 # R = build_residual_network(H, "capacity")
-s_node = 1
-t_node = 3
+
 # cut_value, partition = nx.minimum_cut(G, s_node, t_node, capacity='capacity')
 # reachable, non_reachable = partition
 # cutset = set()
@@ -145,20 +206,21 @@ temp_list_of_cut_set_sizes = []
 for cut_set in K:
     # get size of cut-set and store it if not already stored
     temp_list_of_cut_set_sizes.append(len(cut_set))
-# eliminate duplicates and order list in ascending order
-list_of_cut_set_sizes = sorted(set(temp_list_of_cut_set_sizes))
+# order list in ascending order
+# temp_list_of_cut_set_sizes = [1,4,4,2]
+list_of_cut_set_sizes = sorted(temp_list_of_cut_set_sizes)
+# coefficients for A(x) :
+coefs = list(dict(Counter(list_of_cut_set_sizes)).values())
+m = minimum_cut_size
+n = number_of_nodes
 
-    
+p = numpy.linspace(0.01, 0.99, num=1000)
+O_p = OutagePolynomial.eval(p, m, n, coefs)
+OutagePolynomial.plot(p, O_p)
 
 
 
-
-# print("Set of edges that, if removed from the graph, will disconnect it : ",(minimum_st_edge_cut(G, s_node, t_node)))
-# print("The value of the minimum cut : ", cut_value)
-# print("Two sets of nodes that define the minimum cut : ", reachable, " and ",  non_reachable)
-# print("The cut set of edges that induce the minimum cut : ", sorted(cutset))
-# print("List of all the minimum edge cut sets in the graph : ", min_edge_cuts)
-### DRAWINGs
+######################################################### DRAWINGs ################################################
 
 
 # Draw and save the graph

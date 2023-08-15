@@ -59,7 +59,6 @@ class A(sympy.Function):
     plt.savefig("plotted_polynomial.png")
 
 ## Call of the function
-p = numpy.linspace(0.01, 0.99, num=1000)
 # x = []
 # # Get p/(1-p)
 # for element in p:
@@ -70,11 +69,13 @@ m=1 # size of any minimum cut-set (see collection M)
 n=3 # number of edges
 # values of coefficients A_i, given by the number of cut-sets of size i, with i between m and n included
 coefs = [1, 3, 1]
+
+p = numpy.linspace(0.01, 0.99, num=1000)
 O_p = A.eval(p, m, n, coefs)
 A.plot(p, O_p)
 print("Here is p : ",p)
 
-print("Here is result : ", O_p)
+print("Here is O(p) : ", O_p)
 
 # ### PLOT
 # # convert y-axis to Logarithmic scale
