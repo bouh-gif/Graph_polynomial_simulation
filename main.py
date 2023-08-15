@@ -41,7 +41,7 @@ G = nx.MultiDiGraph(directed=True)
 G.add_node(1, subset='source')
 G.add_node(2, subset='others')
 G.add_node(3, subset='target')
-G.add_edges_from([(1, 2, 0, {'capacity': "e1"}),(2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
 # G.add_edge(1, 2, 2, capacity=2.0)  # Add another edge with a different key
 # print(list(G.nodes))
 # print(list(G.edges))
@@ -96,7 +96,7 @@ for min_cut_set in all_min_cuts:
         #     # don't add current min_cut_set value to L because edge_combination already exists as a minimum cut set
                 flag_is_present = 1
                 break
-            break
+            # break
         # # Check if the edge_combination is not a subset of any existing minimal cut sets in L
         # if flag == 0:
         #     tuple_edge_combination = tuple(edge_combination)  # Convert to tuple
