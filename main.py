@@ -32,7 +32,7 @@ class OutagePolynomial(sympy.Function):
         sum=0
         for  i in index:
             # Evaluate sum = A(x) = A(p/(1-p)) :
-            A_i = coefs[i-1]
+            A_i = coefs[i-m]
             # sum = sum + A_i * pow(x, i)
             sum = sum + A_i*(pow(element, i))*(pow(1-element, n-i))
         # Evaluate O(p)
@@ -42,13 +42,14 @@ class OutagePolynomial(sympy.Function):
     return result
   @classmethod
   # defining subclass function with 'eval()' class method
-  def plot(cls, x, y):
+  def plot(cls, x, y, string_expanded_polynomial):
     ### PLOT
     # convert y-axis to Logarithmic scale
     plt.yscale("log")
     # plotting the points
     plt.plot(x, y)
-
+    # legend
+    plt.legend([string_expanded_polynomial])
     # naming the x axis
     plt.xlabel('p')
     # naming the y axis
@@ -103,7 +104,8 @@ s_node = 1
 t_node = 3
 # Edges 
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
-G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
 # G.add_edge(1, 2, 2, capacity=2.0)  # Add another edge with a different key
 # print(list(G.nodes))
 # print(list(G.edges))
@@ -197,7 +199,7 @@ for minimum_cut_set in M:
     # K.append(min_cut_set)
     print(minimum_cut_set)
 
-number_of_nodes = G.number_of_nodes() # noted n in Kschischang's paper
+number_of_edges = G.number_of_edges() # noted n in Kschischang's paper
 minimum_cut_size = len(M[0]) # noted m in Kschischang's paper
 
 # Finding coefficients for A(x) in reliability polynomial : Am = number of cut-sets of size m, Am+1 = number of cut-sets of size m+1 etc...
@@ -212,11 +214,20 @@ list_of_cut_set_sizes = sorted(temp_list_of_cut_set_sizes)
 # coefficients for A(x) :
 coefs = list(dict(Counter(list_of_cut_set_sizes)).values())
 m = minimum_cut_size
-n = number_of_nodes
+n = number_of_edges
+x, y, z = sympy.symbols('x y z')
+polynomial = 0
+# index = [1, 2, 3] # from m to n, here from 1 to 3
+indices = list(range(m, n+1))
+# list_indices = [index for index, _ in enumerate(indices)]
+for i in indices :
+    polynomial = polynomial + coefs[i-m]*pow(x,i)*pow((1-x),(n-i))
+    # print(i)
+string_expanded_polynomial = str(sympy.expand(polynomial)).replace('x', 'p')
 
 p = numpy.linspace(0.01, 0.99, num=1000)
 O_p = OutagePolynomial.eval(p, m, n, coefs)
-OutagePolynomial.plot(p, O_p)
+OutagePolynomial.plot(p, O_p, string_expanded_polynomial)
 
 
 
