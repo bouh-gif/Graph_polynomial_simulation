@@ -93,16 +93,22 @@ def find_all_minimum_cuts(graph, source, target, capacity_key):
 G = nx.MultiDiGraph(directed=True)
 
 # Nodes 
-G.add_node(1, subset='source')
-G.add_node(2, subset='others')
+G.add_node(2, subset='source')
 G.add_node(3, subset='target')
-s_node = 1
-t_node = 3
+s_node = 2 # source node
+t_node = 3 # target node
+
+G.add_node(1, subset='others')
+G.add_node(4, subset='others')
+# G.add_node(5, subset='others')
 
 # Edges 
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
-G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
+G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
 
 
 ### CALL TO CUSTOM FLOW COMPUTING FUNCTION
@@ -177,7 +183,7 @@ indices = list(range(m, n+1))
 for i in indices :
     polynomial = polynomial + coefs[i-m]*pow(x,i)*pow((1-x),(n-i))
     # print(i)
-string_expanded_polynomial = str(sympy.expand(polynomial)).replace('x', 'p')
+string_expanded_polynomial = ((str(sympy.expand(polynomial)).replace('x', 'p')).replace('**', '^')).replace('*', '·')
 
 p = numpy.linspace(0.01, 0.99, num=1000)
 O_p = OutagePolynomial.eval(p, m, n, coefs)
@@ -193,7 +199,7 @@ plt.figure(figsize=(8, 6))  # Adjust the figure size as per your preference
  
 # pos = nx.multipartite_layout(G, subset_key='subset', align='horizontal')  # Use multipartite_layout for automatic separation of parallel edges
 # offset = 0.05  # Adjust this value to control the separation of parallel edges
-pos = nx.random_layout(G)
+pos = nx.planar_layout(G)
 
 # # Get the edge labels
 # edge_labels = {(u, v, key): G[u][v][key]['capacity'] for u, v, key in G.edges(keys=True)}
