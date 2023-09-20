@@ -17,8 +17,11 @@ import matplotlib.pyplot as plt
 class OutagePolynomial(sympy.Function):
   @classmethod
   # defining subclass function with 'eval()' class method
-  def eval(cls, p, m, n, coefs):
+  def eval(cls, p, minimum_cut_size, number_of_edges, coefs):
+    m = minimum_cut_size
+    n = number_of_edges
     result = []
+    UpperB = []
     for element in p:
         # Core of the function : the algebraic expression
         # m=1 # size of any minimum cut-set (see collection M)
@@ -27,7 +30,7 @@ class OutagePolynomial(sympy.Function):
         # coefs = [1, 3, 1]
         # changement de variable : x = p/(1-p) et p = element
         # x = element/(1.0-element)
-
+        UpperB.append((1-(1-element)**2)**2)
         index = list(range(m, n+1))
         sum=0
         for  i in index:
@@ -39,15 +42,16 @@ class OutagePolynomial(sympy.Function):
         # result = pow((1.0-p), n) * sum
 
         result.append(sum)
-    return result
+    return result, UpperB
   @classmethod
   # defining subclass function with 'eval()' class method
-  def plot(cls, x, y, string_expanded_polynomial):
+  def plot(cls, x, y, UpperB, string_expanded_polynomial):
     ### PLOT
     # convert y-axis to Logarithmic scale
     plt.yscale("log")
     # plotting the points
     plt.plot(x, y)
+    # plt.plot(x,UpperB)
     # legend
     plt.legend([string_expanded_polynomial])
     # naming the x axis
@@ -93,14 +97,17 @@ def find_all_minimum_cuts(graph, source, target, capacity_key):
 G = nx.MultiDiGraph(directed=True)
 
 # Nodes 
-G.add_node(2, subset='source')
-G.add_node(3, subset='target')
-s_node = 2 # source node
-t_node = 3 # target node
+G.add_node(1, subset='source')
+G.add_node(8, subset='target')
+s_node = 1 # source node
+t_node = 8 # target node
 
-G.add_node(1, subset='others')
+G.add_node(2, subset='others')
+G.add_node(3, subset='others')
 G.add_node(4, subset='others')
-# G.add_node(5, subset='others')
+G.add_node(5, subset='others')
+G.add_node(6, subset='others')
+G.add_node(7, subset='others')
 
 # Edges 
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
@@ -108,87 +115,129 @@ G.add_node(4, subset='others')
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
 # G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
 # G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
-G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
 
+
+G1 = nx.MultiDiGraph(directed=True)
+
+# Nodes 
+G1.add_node(1, subset='source')
+G1.add_node(4, subset='target')
+s_node1 = 1 # source node
+t_node1 = 4 # target node
+
+G1.add_node(2, subset='others')
+G1.add_node(3, subset='others')
+
+# Edges 
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
+# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G1.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
+
+
+
+
+
+def get_collection(all_min_cuts) :
+
+    K = [] # list of all cut sets
+    L = [] # List of all minimal cut sets
+    M = [] # List of all minimum cut sets
+    for min_cut_set in all_min_cuts:
+        K.append(min_cut_set)
+        print(min_cut_set)
+        list_edge_combination = list(powerset(min_cut_set))
+        list_edge_combination.remove(min_cut_set)
+        # Verify if edge_combination is a cut-set, i.e. if edge_combination can be found in all_min_cuts :
+        flag_is_present = 0
+        for edge_combination in list_edge_combination:
+
+            for one_min_cut in all_min_cuts:
+                if edge_combination == one_min_cut:
+            #     # don't add current min_cut_set value to L because edge_combination already exists as a minimum cut set
+                    flag_is_present = 1
+                    break
+        # If edge_combination is not a cut-set for every member of list_edge_combination, add min_cut_set to L :
+        if flag_is_present == 0 :
+            L.append(min_cut_set)
+    # Create collection of minimum cut-sets M : a minimum cut-set is a cut-set that is of minimum size
+    minimum_size = 10000000000000000000000000 #big value, will be replaced when entering below for loop
+    for cut_set in L:
+        temp_size = len(cut_set)
+        if temp_size < minimum_size :
+            minimum_size = temp_size
+    for cut_set in L:
+        if len(cut_set) == minimum_size:
+            M.append(cut_set)
+    return K, L, M
+def display_collection(graph_name, K,L,M) :     
+    print("FOR GRAPH : ", graph_name)   
+    print("Here is K the collection of all s-t separating cut-sets: a cut-set is a subset of edges whose removal from the network disconnects nodes s and node t  ")
+    for cut_set in K:
+        # K.append(cut_set)
+        print(cut_set)
+    print("Here is L the collection of all minimal cut-sets in the graph : a minimal cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set : ")
+    for minimal_cut_set in L:
+        # L.append(minimal_cut_set)
+        print(minimal_cut_set)
+    print("Here is M the collection of all minimum cut-sets in the graph : a minimum cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set and is of minimum size : ")
+    for minimum_cut_set in M:
+        # M.append(minimum_cut_set)
+        print(minimum_cut_set)
+
+def get_n_m_values(G, M) :
+    number_of_edges = G.number_of_edges() # noted n in Kschischang's paper
+    minimum_cut_size = len(M[0]) # noted m in Kschischang's paper
+    return number_of_edges, minimum_cut_size
+def find_coefs(K) :
+    # Finding coefficients for A(x) in reliability polynomial : Am = number of cut-sets of size m, Am+1 = number of cut-sets of size m+1 etc...
+    # Iterating over collection K
+    temp_list_of_cut_set_sizes = []
+    for cut_set in K:
+        # get size of cut-set and store it if not already stored
+        temp_list_of_cut_set_sizes.append(len(cut_set))
+    # order list in ascending order
+    list_of_cut_set_sizes = sorted(temp_list_of_cut_set_sizes)
+    # coefficients for A(x) 
+    coefs = list(dict(Counter(list_of_cut_set_sizes)).values())
+    return coefs
+
+def get_polynomial_expression(coefs, minimum_cut_size, number_of_edges) :  
+    m = minimum_cut_size
+    n = number_of_edges
+    x, y, z = sympy.symbols('x y z')
+    polynomial = 0
+    indices = list(range(m, n+1))
+    # list_indices = [index for index, _ in enumerate(indices)]
+    for i in indices :
+        polynomial = polynomial + coefs[i-m]*pow(x,i)*pow((1-x),(n-i))
+        # print(i)
+    string_expanded_polynomial = ((str(sympy.expand(polynomial)).replace('x', 'p')).replace('**', '^')).replace('*', '·')
+    return string_expanded_polynomial
 
 ### CALL TO CUSTOM FLOW COMPUTING FUNCTION
 # Find all minimum edge cuts in the graph
 all_min_cuts = find_all_minimum_cuts(G, source=s_node, target=t_node, capacity_key='capacity')
-
+all_min_cuts1 = find_all_minimum_cuts(G1, source=s_node1, target=t_node1, capacity_key='capacity')
 
 ### EVALUATING K, L, AND M (collection of cut-sets, minimal cut-sets and minimum cut-sets)
-
-K = [] # list of all cut sets
-L = [] # List of all minimal cut sets
-M = [] # List of all minimum cut sets
-for min_cut_set in all_min_cuts:
-    K.append(min_cut_set)
-    print(min_cut_set)
-    list_edge_combination = list(powerset(min_cut_set))
-    list_edge_combination.remove(min_cut_set)
-    # Verify if edge_combination is a cut-set, i.e. if edge_combination can be found in all_min_cuts :
-    flag_is_present = 0
-    for edge_combination in list_edge_combination:
-
-        for one_min_cut in all_min_cuts:
-            if edge_combination == one_min_cut:
-        #     # don't add current min_cut_set value to L because edge_combination already exists as a minimum cut set
-                flag_is_present = 1
-                break
-    # If edge_combination is not a cut-set for every member of list_edge_combination, add min_cut_set to L :
-    if flag_is_present == 0 :
-        L.append(min_cut_set)
-# Create collection of minimum cut-sets M : a minimum cut-set is a cut-set that is of minimum size
-minimum_size = 10000000000000000000000000 #big value, will be replaced when entering below for loop
-for cut_set in L:
-    temp_size = len(cut_set)
-    if temp_size < minimum_size :
-        minimum_size = temp_size
-for cut_set in L:
-    if len(cut_set) == minimum_size:
-        M.append(cut_set)
-    
-print("Here is K the collection of all s-t separating cut-sets: a cut-set is a subset of edges whose removal from the network disconnects nodes s and node t  ")
-for cut_set in K:
-    # K.append(cut_set)
-    print(cut_set)
-print("Here is L the collection of all minimal cut-sets in the graph : a minimal cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set : ")
-for minimal_cut_set in L:
-    # L.append(minimal_cut_set)
-    print(minimal_cut_set)
-print("Here is M the collection of all minimum cut-sets in the graph : a minimum cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set and is of minimum size : ")
-for minimum_cut_set in M:
-    # M.append(minimum_cut_set)
-    print(minimum_cut_set)
-
-number_of_edges = G.number_of_edges() # noted n in Kschischang's paper
-minimum_cut_size = len(M[0]) # noted m in Kschischang's paper
-
-# Finding coefficients for A(x) in reliability polynomial : Am = number of cut-sets of size m, Am+1 = number of cut-sets of size m+1 etc...
-# Iterating over collection K
-temp_list_of_cut_set_sizes = []
-for cut_set in K:
-    # get size of cut-set and store it if not already stored
-    temp_list_of_cut_set_sizes.append(len(cut_set))
-# order list in ascending order
-list_of_cut_set_sizes = sorted(temp_list_of_cut_set_sizes)
-# coefficients for A(x) 
-coefs = list(dict(Counter(list_of_cut_set_sizes)).values())
-m = minimum_cut_size
-n = number_of_edges
-x, y, z = sympy.symbols('x y z')
-polynomial = 0
-indices = list(range(m, n+1))
-# list_indices = [index for index, _ in enumerate(indices)]
-for i in indices :
-    polynomial = polynomial + coefs[i-m]*pow(x,i)*pow((1-x),(n-i))
-    # print(i)
-string_expanded_polynomial = ((str(sympy.expand(polynomial)).replace('x', 'p')).replace('**', '^')).replace('*', '·')
-
+K, L, M = get_collection(all_min_cuts)
+display_collection("G", K,L,M)
+number_of_edges, minimum_cut_size = get_n_m_values(G, M)
+coefs = find_coefs(K)
+string_expanded_polynomial = get_polynomial_expression(coefs, minimum_cut_size, number_of_edges)
 p = numpy.linspace(0.01, 0.99, num=1000)
-O_p = OutagePolynomial.eval(p, m, n, coefs)
-OutagePolynomial.plot(p, O_p, string_expanded_polynomial)
+O_p, UpperB = OutagePolynomial.eval(p, minimum_cut_size, number_of_edges, coefs)
+OutagePolynomial.plot(p, O_p, UpperB, string_expanded_polynomial)
 
+##################################################
 
 
 ######################################################### DRAWING THE GRAPH ################################################
