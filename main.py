@@ -93,55 +93,6 @@ def find_all_minimum_cuts(graph, source, target, capacity_key):
     return all_minimum_cuts
 
 
-# CREATE THE GRAPH
-G = nx.MultiDiGraph(directed=True)
-
-# Nodes 
-G.add_node(1, subset='source')
-G.add_node(8, subset='target')
-s_node = 1 # source node
-t_node = 8 # target node
-
-G.add_node(2, subset='others')
-G.add_node(3, subset='others')
-G.add_node(4, subset='others')
-G.add_node(5, subset='others')
-G.add_node(6, subset='others')
-G.add_node(7, subset='others')
-
-# Edges 
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
-# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
-G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
-G.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
-
-
-G1 = nx.MultiDiGraph(directed=True)
-
-# Nodes 
-G1.add_node(1, subset='source')
-G1.add_node(4, subset='target')
-s_node1 = 1 # source node
-t_node1 = 4 # target node
-
-G1.add_node(2, subset='others')
-G1.add_node(3, subset='others')
-
-# Edges 
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
-# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
-# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
-G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
-G1.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
-
-
 
 
 
@@ -221,11 +172,84 @@ def get_polynomial_expression(coefs, minimum_cut_size, number_of_edges) :
         # print(i)
     string_expanded_polynomial = ((str(sympy.expand(polynomial)).replace('x', 'p')).replace('**', '^')).replace('*', '·')
     return string_expanded_polynomial
+def multiply_two_lists(list1, list2) :
+    # Multiplying two lists
+    # of same length
+    res_list = []
+    for i in range(0, len(list1)):
+        res_list.append(list1[i] * list2[i])
+    return res_list
+    
+        
+# CREATE THE GRAPH
+G = nx.MultiDiGraph(directed=True)
 
+# Nodes 
+G.add_node(1, subset='source')
+G.add_node(8, subset='target')
+s_node = 1 # source node
+t_node = 8 # target node
+
+G.add_node(2, subset='others')
+G.add_node(3, subset='others')
+G.add_node(4, subset='others')
+G.add_node(5, subset='others')
+G.add_node(6, subset='others')
+G.add_node(7, subset='others')
+
+# Edges 
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
+# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
+
+
+G1 = nx.MultiDiGraph(directed=True)
+# Nodes 
+G1.add_node(1, subset='source')
+G1.add_node(4, subset='target')
+s_node1 = 1 # source node
+t_node1 = 4 # target node
+G1.add_node(2, subset='others')
+G1.add_node(3, subset='others')
+# Edges 
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
+# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+# G1.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
+
+
+G2 = nx.MultiDiGraph(directed=True)
+# Nodes 
+G2.add_node(4, subset='source')
+G2.add_node(8, subset='target')
+s_node2 = 4 # source node
+t_node2 = 8 # target node
+G2.add_node(5, subset='others')
+G2.add_node(6, subset='others')
+G2.add_node(7, subset='others')
+# Edges 
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 2, 1, {'capacity': "e2"}), (2, 3, 0, {'capacity': "e3"}), (2, 3, 1, {'capacity': "e4"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (2, 3, 1, {'capacity': "e3"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e5"}), (1, 4, 0, {'capacity': "e2"}), (4, 5, 0, {'capacity': "e3"}), (2, 5, 0, {'capacity': "e4"}), (5, 3, 0, {'capacity': "e6"})])
+# G.add_edges_from([(1, 2, 0, {'capacity': "a"}), (2, 3, 0, {'capacity': "b"}), (1, 3, 0, {'capacity': "c"}), (1, 4, 0, {'capacity': "d"}), (4, 3, 0, {'capacity': "f"})])
+# G.add_edges_from([(2, 1, 0, {'capacity': "a"}), (1, 3, 0, {'capacity': "b"}), (2, 4, 0, {'capacity': "c"}), (4, 3, 0, {'capacity': "d"}), (1, 4, 0, {'capacity': "f"})])
+# G2.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G2.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
+
+#### GRAPH 0
 ### CALL TO CUSTOM FLOW COMPUTING FUNCTION
 # Find all minimum edge cuts in the graph
 all_min_cuts = find_all_minimum_cuts(G, source=s_node, target=t_node, capacity_key='capacity')
-all_min_cuts1 = find_all_minimum_cuts(G1, source=s_node1, target=t_node1, capacity_key='capacity')
 
 ### EVALUATING K, L, AND M (collection of cut-sets, minimal cut-sets and minimum cut-sets)
 K, L, M = get_collection(all_min_cuts)
@@ -237,63 +261,93 @@ p = numpy.linspace(0.01, 0.99, num=1000)
 O_p, UpperB = OutagePolynomial.eval(p, minimum_cut_size, number_of_edges, coefs)
 OutagePolynomial.plot(p, O_p, UpperB, string_expanded_polynomial)
 
+#### GRAPH 1
+# Find all minimum edge cuts in the graph
+all_min_cuts1 = find_all_minimum_cuts(G1, source=s_node1, target=t_node1, capacity_key='capacity')
+
+### EVALUATING K, L, AND M (collection of cut-sets, minimal cut-sets and minimum cut-sets)
+K1, L1, M1 = get_collection(all_min_cuts1)
+display_collection("G1", K1, L1, M1)
+number_of_edges1, minimum_cut_size1 = get_n_m_values(G1, M1)
+coefs1 = find_coefs(K1)
+string_expanded_polynomial1 = get_polynomial_expression(coefs1, minimum_cut_size1, number_of_edges1)
+p1 = numpy.linspace(0.01, 0.99, num=1000)
+O_p1, UpperB1 = OutagePolynomial.eval(p1, minimum_cut_size1, number_of_edges1, coefs1)
+OutagePolynomial.plot(p1, O_p1, UpperB1, string_expanded_polynomial1)
+
+
+#### GRAPH 2
+# Find all minimum edge cuts in the graph
+all_min_cuts2 = find_all_minimum_cuts(G2, source=s_node2, target=t_node2, capacity_key='capacity')
+
+### EVALUATING K, L, AND M (collection of cut-sets, minimal cut-sets and minimum cut-sets)
+K2, L2, M2 = get_collection(all_min_cuts2)
+display_collection("G2", K2, L2, M2)
+number_of_edges2, minimum_cut_size2 = get_n_m_values(G2, M2)
+coefs2 = find_coefs(K2)
+string_expanded_polynomial2 = get_polynomial_expression(coefs2, minimum_cut_size2, number_of_edges2)
+p2 = numpy.linspace(0.01, 0.99, num=1000)
+O_p2, UpperB2 = OutagePolynomial.eval(p2, minimum_cut_size2, number_of_edges2, coefs2)
+OutagePolynomial.plot(p2, O_p2, UpperB2, string_expanded_polynomial2)
+
+
 ##################################################
 
 
 ######################################################### DRAWING THE GRAPH ################################################
 
-
-# Draw and save the graph
-plt.figure(figsize=(8, 6))  # Adjust the figure size as per your preference
- 
-# pos = nx.multipartite_layout(G, subset_key='subset', align='horizontal')  # Use multipartite_layout for automatic separation of parallel edges
-# offset = 0.05  # Adjust this value to control the separation of parallel edges
-pos = nx.planar_layout(G)
-
-# # Get the edge labels
-# edge_labels = {(u, v, key): G[u][v][key]['capacity'] for u, v, key in G.edges(keys=True)}
-
-# Draw edge labels
-
-# for u, v, key in G.edges(keys=True):
-#     x1, y1 = pos[u]
-#     x2, y2 = pos[v]
-#     capacity = G[u][v][key]['capacity']
-#     plt.text((x1 + x2) / 2, (y1 + y2) / 2, f"{capacity}", horizontalalignment='center', verticalalignment='center', fontsize=10)
-
-#     x_arr, y_arr = x2, y2
-#     plt.arrow(x1, y1, x_arr - x1, y_arr - y1, color='black', width=0.005, head_width=0.03, head_length=0.03)  # Adjust the width parameter
-
-# Draw nodes
-nx.draw_networkx_nodes(G, pos, node_color='c', node_size=100, alpha=1)
-
-# Draw edges as separate curves
-for u, v, key in G.edges(keys=True):
-    connection_style = "arc3,rad=" + str(0.3 * key)
-    plt.annotate("",
-                 xy=pos[u], xycoords='data',  # Source node
-                 xytext=pos[v], textcoords='data',  # Target node
-                 arrowprops=dict(arrowstyle="->", color="0.5",
-                                 shrinkA=5, shrinkB=5,
-                                 patchA=None, patchB=None,
-                                 connectionstyle=connection_style),
-                 )
-
+def draw_graph(G) :
+    # Draw and save the graph
+    plt.figure(figsize=(8, 6))  # Adjust the figure size as per your preference
     
-# # Draw nodes and labels
-# nx.draw(G, pos, with_labels=True, font_weight='bold')
+    # pos = nx.multipartite_layout(G, subset_key='subset', align='horizontal')  # Use multipartite_layout for automatic separation of parallel edges
+    # offset = 0.05  # Adjust this value to control the separation of parallel edges
+    pos = nx.planar_layout(G)
 
-# Draw node labels
-node_labels = {n: n for n in G.nodes}
-nx.draw_networkx_labels(G, pos, labels=node_labels)
+    # # Get the edge labels
+    # edge_labels = {(u, v, key): G[u][v][key]['capacity'] for u, v, key in G.edges(keys=True)}
 
-# Turn off axis
-plt.axis('off')
+    # Draw edge labels
 
-# Save the file and show the figure 
-plt.savefig("path.png")
-# plt.show()
+    # for u, v, key in G.edges(keys=True):
+    #     x1, y1 = pos[u]
+    #     x2, y2 = pos[v]
+    #     capacity = G[u][v][key]['capacity']
+    #     plt.text((x1 + x2) / 2, (y1 + y2) / 2, f"{capacity}", horizontalalignment='center', verticalalignment='center', fontsize=10)
 
+    #     x_arr, y_arr = x2, y2
+    #     plt.arrow(x1, y1, x_arr - x1, y_arr - y1, color='black', width=0.005, head_width=0.03, head_length=0.03)  # Adjust the width parameter
+
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, node_color='c', node_size=100, alpha=1)
+
+    # Draw edges as separate curves
+    for u, v, key in G.edges(keys=True):
+        connection_style = "arc3,rad=" + str(0.3 * key)
+        plt.annotate("",
+                    xy=pos[u], xycoords='data',  # Source node
+                    xytext=pos[v], textcoords='data',  # Target node
+                    arrowprops=dict(arrowstyle="->", color="0.5",
+                                    shrinkA=5, shrinkB=5,
+                                    patchA=None, patchB=None,
+                                    connectionstyle=connection_style),
+                    )
+
+        
+    # # Draw nodes and labels
+    # nx.draw(G, pos, with_labels=True, font_weight='bold')
+
+    # Draw node labels
+    node_labels = {n: n for n in G.nodes}
+    nx.draw_networkx_labels(G, pos, labels=node_labels)
+
+    # Turn off axis
+    plt.axis('off')
+
+    # Save the file and show the figure 
+    plt.savefig("path.png")
+    # plt.show()
+draw_graph(G)
 
 
 
