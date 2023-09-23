@@ -51,6 +51,7 @@ class OutagePolynomial(sympy.Function):
     ### PLOT
     # convert y-axis to Logarithmic scale
     plt.yscale("log")
+
     # plotting the points
     plt.plot(x, y)
     # plt.plot(x,UpperB)
@@ -94,9 +95,6 @@ def find_all_minimum_cuts(graph, source, target, capacity_key):
             all_minimum_cuts.append(edge_combination)
 
     return all_minimum_cuts
-
-
-
 
 
 def get_collection(all_min_cuts) :
@@ -175,12 +173,12 @@ def get_polynomial_expression(coefs, minimum_cut_size, number_of_edges) :
         # print(i)
     string_expanded_polynomial = ((str(sympy.expand(polynomial)).replace('x', 'p')).replace('**', '^')).replace('*', '·')
     return string_expanded_polynomial
-def multiply_two_lists(list1, list2) :
+def multiply_two_lists(list1, list2, list3) :
     # Multiplying two lists
     # of same length
     res_list = []
     for i in range(0, len(list1)):
-        res_list.append(list1[i] * list2[i])
+        res_list.append(1 - ((1-list1[i]) * (1-list2[i]) * (1-list3[i])))    
     return res_list
     
 def draw_graph(G, path) :
@@ -244,15 +242,26 @@ G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}),
 G2 = nx.MultiDiGraph(directed=True)
 # Nodes 
 G2.add_node(4, subset='source')
-G2.add_node(8, subset='target')
+G2.add_node(5, subset='target')
 s_node2 = 4 # source node
-t_node2 = 8 # target node
-G2.add_node(5, subset='others')
-G2.add_node(6, subset='others')
-G2.add_node(7, subset='others')
+t_node2 = 5 # target node
+
 # Edges 
 # G2.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
-G2.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
+G2.add_edges_from([(4, 5, 0, {'capacity': "e5"})])
+
+### CREATE THE GRAPH G3
+G3= nx.MultiDiGraph(directed=True)
+# Nodes 
+G3.add_node(5, subset='source')
+G3.add_node(8, subset='target')
+s_node3 = 5 # source node
+t_node3 = 8 # target node
+G3.add_node(6, subset='others')
+G3.add_node(7, subset='others')
+# Edges 
+# G2.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G3.add_edges_from([(5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
 
 #### GRAPH 0 HANDLING
 ### CALL TO CUSTOM FLOW COMPUTING FUNCTION
@@ -267,6 +276,7 @@ coefs = find_coefs(K)
 string_expanded_polynomial = get_polynomial_expression(coefs, minimum_cut_size, number_of_edges)
 p = numpy.linspace(0.01, 0.99, num=1000)
 O_p, UpperB = OutagePolynomial.eval(p, minimum_cut_size, number_of_edges, coefs)
+# plt.scatter(p, O_p, marker="*") 
 OutagePolynomial.plot(p, O_p, UpperB, string_expanded_polynomial)
 
 #### GRAPH 1 HANDLING
@@ -298,9 +308,28 @@ p2 = numpy.linspace(0.01, 0.99, num=1000)
 O_p2, UpperB2 = OutagePolynomial.eval(p2, minimum_cut_size2, number_of_edges2, coefs2)
 OutagePolynomial.plot(p2, O_p2, UpperB2, string_expanded_polynomial2)
 
-O_p12 = multiply_two_lists(O_p1, O_p2)
-UpperB12 = [] # Upper bound for this case is nothing for now, to be changed later on
-OutagePolynomial.plot(p2, O_p12, UpperB2, " Two polynomial multiplication")
+# O_p12 = multiply_two_lists(O_p1, O_p2)
+# UpperB12 = [] # Upper bound for this case is nothing for now, to be changed later on
+# OutagePolynomial.plot(p2, O_p12, UpperB2, " Two polynomial multiplication")
+
+#### GRAPH 3 HANDLING
+# Find all minimum edge cuts in the graph
+all_min_cuts3 = find_all_minimum_cuts(G3, source=s_node3, target=t_node3, capacity_key='capacity')
+
+### EVALUATING K, L, AND M (collection of cut-sets, minimal cut-sets and minimum cut-sets)
+K3, L3, M3 = get_collection(all_min_cuts3)
+display_collection("G3", K3, L3, M3)
+number_of_edges3, minimum_cut_size3 = get_n_m_values(G3, M3)
+coefs3 = find_coefs(K3)
+string_expanded_polynomial3 = get_polynomial_expression(coefs3, minimum_cut_size3, number_of_edges3)
+p3 = numpy.linspace(0.01, 0.99, num=1000)
+O_p3, UpperB3 = OutagePolynomial.eval(p3, minimum_cut_size3, number_of_edges3, coefs3)
+OutagePolynomial.plot(p3, O_p3, UpperB3, string_expanded_polynomial3)
+
+O_p123 = multiply_two_lists(O_p1, O_p2, O_p3)
+UpperB123 = [] # Upper bound for this case is nothing for now, to be changed later on
+plt.scatter(p2, O_p123, marker="*") 
+OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial multiplication")
 
 ##################################################
 
@@ -310,6 +339,7 @@ OutagePolynomial.plot(p2, O_p12, UpperB2, " Two polynomial multiplication")
 draw_graph(G, "path.png")
 draw_graph(G1, "path1.png")
 draw_graph(G2, "path2.png")
+draw_graph(G3, "path3.png")
 
 
 

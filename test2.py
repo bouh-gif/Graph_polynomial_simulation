@@ -1,6 +1,9 @@
-# Count occurrences of all the unique items
-L = ['a', 'b', 'c', 'b', 'a', 'a', 'a']
-from collections import Counter
-coefs = list(dict(Counter(L)).values())
-print(coefs)
-# Prints Counter({'a': 4, 'b': 2, 'c': 1})
+# import sys
+log_file = open('myprog.log', 'w')
+def log(text):
+    print(text)
+    log_file.write(str(text) + '\n')
+
+
+log('hello')
+log("test")
