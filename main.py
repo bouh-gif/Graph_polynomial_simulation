@@ -11,6 +11,9 @@ from collections import Counter
 import sympy
 import numpy
 import matplotlib.pyplot as plt
+from itertools import chain
+from networkx.algorithms.connectivity import k_edge_components
+import random
 
 # GLOBAL VARIABLE, to be run once
 legend = []
@@ -47,13 +50,16 @@ class OutagePolynomial(sympy.Function):
     return result, UpperB
   @classmethod
   # defining subclass function with 'eval()' class method
-  def plot(cls, x, y, UpperB, string_expanded_polynomial):
+  def plot(cls, x, y, UpperB, string_expanded_polynomial, marker=None):
     ### PLOT
     # convert y-axis to Logarithmic scale
     plt.yscale("log")
-
-    # plotting the points
-    plt.plot(x, y)
+    if marker==None:
+        # plotting the points
+        plt.plot(x, y)
+    else:
+        # plotting the points
+        plt.plot(x, y, marker, ms = 1)
     # plt.plot(x,UpperB)
     # legend
     legend.append(string_expanded_polynomial)
@@ -64,7 +70,7 @@ class OutagePolynomial(sympy.Function):
     plt.ylabel('O(p)')
 
     # giving a title to my graph
-    plt.title('Reliability polynomial O(p)')
+    plt.title('Outage polynomial O(p)')
 
     # Add gridlines to the plot
     plt.grid(visible=True, which='major', linestyle='-')
@@ -207,7 +213,115 @@ def draw_graph(G, path) :
     # Save the file and show the figure 
     plt.savefig(path)
     # plt.show()
-        
+
+# def compute_pathsets(graph, source, target):
+#     paths = list(nx.all_simple_paths(graph, source=source, target=target))
+#     return paths
+
+def compute_all_edge_pathsets(graph, source, target):
+    all_edge_pathsets = []
+
+    def dfs(node, current_path):
+        if node == target:
+            all_edge_pathsets.append(tuple(current_path))
+        for neighbor in graph.neighbors(node):
+            edge = (node, neighbor)
+            if edge not in current_path:
+                dfs(neighbor, current_path + [edge])
+
+    dfs(source, [])
+    return all_edge_pathsets
+
+def compute_and_visualize_pathsets(graph, source, target, pathsets):
+    pos = nx.spring_layout(graph)
+    plt.figure(figsize=(8, 6))
+    
+    # Draw nodes
+    nx.draw_networkx_nodes(graph, pos, node_color='c', node_size=100, alpha=1)
+    
+    # Draw edges as separate curves
+    for u, v, key in graph.edges(keys=True):
+        connection_style = "arc3,rad=" + str(0.3 * key)
+        plt.annotate("",
+                    xy=pos[u], xycoords='data',  # Source node
+                    xytext=pos[v], textcoords='data',  # Target node
+                    arrowprops=dict(arrowstyle="->", color="0.5",
+                                    shrinkA=5, shrinkB=5,
+                                    patchA=None, patchB=None,
+                                    connectionstyle=connection_style),
+                    )
+    
+    # Draw node labels
+    node_labels = {n: n for n in graph.nodes}
+    nx.draw_networkx_labels(graph, pos, labels=node_labels)
+    
+    # Visualize pathsets
+    for i, path in enumerate(pathsets):
+        color = plt.cm.viridis(i / len(pathsets))  # Use a colormap for path coloring
+        for j in range(len(path) - 1):
+            u, v = path[j], path[j + 1]
+            plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color=color)
+    
+    # Turn off axis
+    plt.axis('off')
+    
+    plt.show()
+   
+def simulate_packet_arrival(path, edge_probabilities, one_edge_probability):
+    """
+    Simulate the arrival of a packet from source to target along a path based on edge probabilities.
+
+    Args:
+    - path (list of edges): The path from source to target, represented as a list of edges.
+    - edge_probabilities (dict): A dictionary where keys are edges (as tuples) and values are edge probabilities.
+
+    Returns:
+    - bool: True if the packet successfully arrived, False otherwise.
+    """
+    probability = 1.0
+
+    for edge in path:
+        # if edge in edge_probabilities:
+        probability *= one_edge_probability
+        # else:
+        #     # If the edge probability is not provided, assume a default value, e.g., 1.0 (always succeeds).
+        #     probability *= 1.0
+        # probability *= edge_probability
+
+    # Simulate packet arrival based on calculated probability
+    return random.random() < probability
+
+
+def trial_monte_carlo(total_trial_number, path, edge_probabilities, one_edge_probability) :
+    average_log = []
+    x = numpy.arange(1, total_trial_number, 1)
+    for trial_number in x :
+        log_packet_arrival = []
+        for trial in range(1,trial_number+1) :
+
+            # Simulate packet arrival.
+            packet_arrived = simulate_packet_arrival(path, edge_probabilities, one_edge_probability)
+            log_packet_arrival.append(packet_arrived)
+
+        # Calculate the average of elements in log_packet_arrival
+        average_packet_arrival = sum(log_packet_arrival) / len(log_packet_arrival)
+        average = average_packet_arrival
+        average_log.append(average)
+    average_success_over_trials = average_log[-1]
+    return average_log, average_success_over_trials
+
+def create_dict_edge_probabilities(all_pathsets, one_edge_probability) :
+    # one_edge_probability = 0.9  # change this probability as needed
+
+    # Create a dictionary to associate every edge with the edge-probability pair
+    edge_probabilities = {}
+
+    # Iterate through all_edge_pathsets and populate the edge_probabilities dictionary
+    for pathset in all_pathsets:
+        for edge in pathset:
+            edge_probabilities[edge] = one_edge_probability
+    return edge_probabilities
+
 ### CREATE THE GRAPH G0
 G = nx.MultiDiGraph(directed=True)
 # Nodes 
@@ -328,9 +442,60 @@ OutagePolynomial.plot(p3, O_p3, UpperB3, string_expanded_polynomial3)
 
 O_p123 = multiply_two_lists(O_p1, O_p2, O_p3)
 UpperB123 = [] # Upper bound for this case is nothing for now, to be changed later on
-plt.scatter(p2, O_p123, marker="*") 
-OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial multiplication")
+# plt.scatter(p2, O_p123, 'o:r') 
+# marker = '^k:'
+OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial multiplication", marker='k:')
 
+# # Graph 0
+# pathsets0 = compute_pathsets(G, s_node, t_node)
+# compute_and_visualize_pathsets(G, s_node, t_node, pathsets0)
+
+# Initialize a list to store pathsets for each graph
+monte_carlo_average_success_over_trials = []
+for one_edge_probability in p :
+    ### MONTE-CARLO Confirmation of results
+    # Graph 0
+
+    all_pathsets = compute_all_edge_pathsets(G, s_node, t_node)
+    one_edge_probability = 0.8
+    edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_probability) 
+
+    total_trial_number = round(100*1/one_edge_probability)
+    average_log, average_success_over_trials = trial_monte_carlo(total_trial_number, all_pathsets, edge_probabilities, one_edge_probability)
+    monte_carlo_average_success_over_trials.append(average_success_over_trials)
+
+OutagePolynomial.plot(p, monte_carlo_average_success_over_trials, UpperB2, " Monte-carlo probability", marker='m:')
+print("all_pathsets : ",all_pathsets[0])
+# # convert y-axis to Logarithmic scale
+# plt.yscale("log")
+# plt.plot(p,monte_carlo_average_success_over_trials)
+# # naming the x axis
+# plt.xlabel('p')
+# # naming the y axis
+# plt.ylabel('Monte-carlo success')
+
+# # giving a title to my graph
+# plt.title('Average success of Monte-carlo trials over p')
+
+# # Add gridlines to the plot
+# plt.grid(visible=True, which='major', linestyle='-')
+# plt.grid(visible=True, which='minor', linestyle='--')
+# # grid(b=True, which='major', color='b', linestyle='-')
+
+# # Save the file and show the figure
+# plt.savefig("monte_carlo_success.png")
+
+# # Graph 1
+# pathsets1 = compute_pathsets(G1, s_node1, t_node1)
+# compute_and_visualize_pathsets(G1, s_node1, t_node1, pathsets1)
+
+# # Graph 2
+# pathsets2 = compute_pathsets(G2, s_node2, t_node2)
+# compute_and_visualize_pathsets(G2, s_node2, t_node2, pathsets2)
+
+# # Graph 3
+# pathsets3 = compute_pathsets(G3, s_node3, t_node3)
+# compute_and_visualize_pathsets(G3, s_node3, t_node3, pathsets3)
 ##################################################
 
 
