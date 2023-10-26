@@ -232,15 +232,50 @@ def compute_all_edge_pathsets(graph, source, target):
     dfs(source, [])
     return all_edge_pathsets
 
-def compute_and_visualize_pathsets(graph, source, target, pathsets):
-    pos = nx.spring_layout(graph)
+# def compute_and_visualize_pathsets(graph, source, target, pathsets):
+#     pos = nx.spring_layout(graph)
+#     plt.figure(figsize=(8, 6))
+    
+#     # Draw nodes
+#     nx.draw_networkx_nodes(graph, pos, node_color='c', node_size=100, alpha=1)
+    
+#     # Draw edges as separate curves
+#     for u, v, key in graph.edges(keys=True):
+#         connection_style = "arc3,rad=" + str(0.3 * key)
+#         plt.annotate("",
+#                     xy=pos[u], xycoords='data',  # Source node
+#                     xytext=pos[v], textcoords='data',  # Target node
+#                     arrowprops=dict(arrowstyle="->", color="0.5",
+#                                     shrinkA=5, shrinkB=5,
+#                                     patchA=None, patchB=None,
+#                                     connectionstyle=connection_style),
+#                     )
+    
+#     # Draw node labels
+#     node_labels = {n: n for n in graph.nodes}
+#     nx.draw_networkx_labels(graph, pos, labels=node_labels)
+    
+#     # Visualize pathsets
+#     for i, path in enumerate(pathsets):
+#         color = plt.cm.viridis(i / len(pathsets))  # Use a colormap for path coloring
+#         for j in range(len(path) - 1):
+#             u, v = path[j], path[j + 1]
+#             plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color=color)
+    
+#     # Turn off axis
+#     plt.axis('off')
+    
+#     plt.show()
+
+def compute_and_visualize_edge_pathsets_with_highlighted_arrows(G, s_node, t_node, all_pathsets, pathset, one_edge_probability):
+    pos = nx.spring_layout(G)
     plt.figure(figsize=(8, 6))
     
     # Draw nodes
-    nx.draw_networkx_nodes(graph, pos, node_color='c', node_size=100, alpha=1)
+    nx.draw_networkx_nodes(G, pos, node_color='c', node_size=100, alpha=1)
     
     # Draw edges as separate curves
-    for u, v, key in graph.edges(keys=True):
+    for u, v, key in G.edges(keys=True):
         connection_style = "arc3,rad=" + str(0.3 * key)
         plt.annotate("",
                     xy=pos[u], xycoords='data',  # Source node
@@ -252,21 +287,24 @@ def compute_and_visualize_pathsets(graph, source, target, pathsets):
                     )
     
     # Draw node labels
-    node_labels = {n: n for n in graph.nodes}
-    nx.draw_networkx_labels(graph, pos, labels=node_labels)
+    node_labels = {n: n for n in G.nodes}
+    nx.draw_networkx_labels(G, pos, labels=node_labels)
     
     # Visualize pathsets
-    for i, path in enumerate(pathsets):
-        color = plt.cm.viridis(i / len(pathsets))  # Use a colormap for path coloring
+    for i, path in enumerate(all_pathsets):
+        color = plt.cm.viridis(i / len(all_pathsets))  # Use a colormap for path coloring
         for j in range(len(path) - 1):
             u, v = path[j], path[j + 1]
-            plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color=color)
+            if path in pathset:
+                plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color="red", linewidth=2)  # Highlight in red
+            else:
+                plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color=color)
     
     # Turn off axis
     plt.axis('off')
     
     plt.show()
-   
+
 def simulate_packet_arrival(path, edge_probabilities, one_edge_probability):
     """
     Simulate the arrival of a packet from source to target along a path based on edge probabilities.
@@ -446,57 +484,37 @@ UpperB123 = [] # Upper bound for this case is nothing for now, to be changed lat
 # marker = '^k:'
 OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial multiplication", marker='k:')
 
-# # Graph 0
+# Graph 0
 # pathsets0 = compute_pathsets(G, s_node, t_node)
 # compute_and_visualize_pathsets(G, s_node, t_node, pathsets0)
+one_edge_probability = 0.7
+all_pathsets = compute_all_edge_pathsets(G, s_node, t_node)
+print("Here is the list of pathsets : ")
+print(all_pathsets[0])
+print(all_pathsets[1])
+print(all_pathsets[2])
+print(all_pathsets[3])
+edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_probability) 
+# compute_and_visualize_edge_pathset(G, all_pathsets[0], edge_probabilities, s_node, t_node)
+# compute_and_visualize_edge_pathsets_with_highlighted_arrows(G, s_node, t_node, all_pathsets, all_pathsets[0], one_edge_probability)
 
-# Initialize a list to store pathsets for each graph
-monte_carlo_average_success_over_trials = []
-for one_edge_probability in p :
-    ### MONTE-CARLO Confirmation of results
-    # Graph 0
+# # Initialize a list to store pathsets for each graph
+# monte_carlo_average_success_over_trials = []
+# for one_edge_probability in p :
+#     ### MONTE-CARLO Confirmation of results
+#     # Graph 0
 
-    all_pathsets = compute_all_edge_pathsets(G, s_node, t_node)
-    one_edge_probability = 0.8
-    edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_probability) 
+#     all_pathsets = compute_all_edge_pathsets(G, s_node, t_node)
+#     edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_probability) 
 
-    total_trial_number = round(100*1/one_edge_probability)
-    average_log, average_success_over_trials = trial_monte_carlo(total_trial_number, all_pathsets, edge_probabilities, one_edge_probability)
-    monte_carlo_average_success_over_trials.append(average_success_over_trials)
+#     total_trial_number = round(100*1/one_edge_probability)
+#     average_log, average_success_over_trials = trial_monte_carlo(total_trial_number, all_pathsets, edge_probabilities, one_edge_probability)
+#     monte_carlo_average_success_over_trials.append(average_success_over_trials)
 
-OutagePolynomial.plot(p, monte_carlo_average_success_over_trials, UpperB2, " Monte-carlo probability", marker='m:')
-print("all_pathsets : ",all_pathsets[0])
-# # convert y-axis to Logarithmic scale
-# plt.yscale("log")
-# plt.plot(p,monte_carlo_average_success_over_trials)
-# # naming the x axis
-# plt.xlabel('p')
-# # naming the y axis
-# plt.ylabel('Monte-carlo success')
+# OutagePolynomial.plot(p, monte_carlo_average_success_over_trials, UpperB2, " Monte-carlo probability", marker='m:')
+# print("all_pathsets : ",all_pathsets[0])
 
-# # giving a title to my graph
-# plt.title('Average success of Monte-carlo trials over p')
 
-# # Add gridlines to the plot
-# plt.grid(visible=True, which='major', linestyle='-')
-# plt.grid(visible=True, which='minor', linestyle='--')
-# # grid(b=True, which='major', color='b', linestyle='-')
-
-# # Save the file and show the figure
-# plt.savefig("monte_carlo_success.png")
-
-# # Graph 1
-# pathsets1 = compute_pathsets(G1, s_node1, t_node1)
-# compute_and_visualize_pathsets(G1, s_node1, t_node1, pathsets1)
-
-# # Graph 2
-# pathsets2 = compute_pathsets(G2, s_node2, t_node2)
-# compute_and_visualize_pathsets(G2, s_node2, t_node2, pathsets2)
-
-# # Graph 3
-# pathsets3 = compute_pathsets(G3, s_node3, t_node3)
-# compute_and_visualize_pathsets(G3, s_node3, t_node3, pathsets3)
-##################################################
 
 
 ######################################################### DRAWING THE GRAPH ################################################

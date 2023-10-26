@@ -55,12 +55,16 @@ edge_probabilities = {
 }
 print("Edge probabilies = ", edge_probabilities)
 edge_probability = probability_p
-total_trial_number = round(1000*1/probability_p)
+total_trial_number = round(10000*1/probability_p)
 average_log, average_success_over_trials = trial_monte_carlo(total_trial_number, path, edge_probability)
 
 
 x = np.arange(1, total_trial_number, 1)
 plt.plot(x,average_log)
+plt.title("Monte-Carlo simulation for probability p = 0.7 and 14000+ trials")
+plt.xlabel("Total trials")
+plt.ylabel("Average ratio of packets received")
+plt.savefig("p07_10000attempts_montecarlo.png")
 print("Last value of p other : ", average_success_over_trials)
 plt.show()
 # # Print the result.
