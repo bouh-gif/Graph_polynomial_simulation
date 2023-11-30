@@ -387,7 +387,8 @@ t_node1 = 4 # target node
 G1.add_node(2, subset='others')
 G1.add_node(3, subset='others')
 # Edges 
-G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (3, 4, 0, {'capacity': "e5"}), (2, 4, 0, {'capacity': "e3"})])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
 # G1.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
 
 ### CREATE THE GRAPH G2
