@@ -11,7 +11,8 @@ pathsets = [
 
     [(1, 2), (2, 4)],
     [(1,4)],
-    [(1, 3), (3, 4)]
+    [(1, 3), (3, 4)],
+    [(1,5), (5,4)]
 
     #Collection K
     # [(1, 2, 0)]
@@ -89,7 +90,7 @@ def simulate_packet_arrival(source, destination, pathsets, edge_probabilities, n
 
 source = 1  # source and destination match node labels
 destination = 3
-num_packets = 150000
+num_packets = 50000
 
 # Vary the failure probability (probability_p) between 0 and 1
 failure_probability_values = np.linspace(0, 1, num=101)  # 101 values from 0 to 1
@@ -107,7 +108,9 @@ for probability_p in failure_probability_values:
         (2, 4): probability_p,
         (1, 3): probability_p,
         (3, 4): probability_p,
-        (1, 4): probability_p
+        (1, 4): probability_p,
+        (1, 5): probability_p,
+        (5, 4): probability_p
         # (4, 5): probability_p,
         # (5, 6): probability_p,
         # (6, 8): probability_p,
@@ -119,15 +122,15 @@ for probability_p in failure_probability_values:
     failure_rates = simulate_packet_arrival(source, destination, pathsets, edge_probabilities, num_packets)
     average_failure_rate = failure_rates[-1]#sum(failure_rates) / len(failure_rates)
     average_failure_rates.append(average_failure_rate)
-    print(f"Probability: {probability_p}, Simulated Failure Rate: {average_failure_rate}, Polynomial Value: {probability_p**5 - 4*probability_p**4 + 4*probability_p**3}")
+    print(f"Probability: {probability_p}, Simulated Failure Rate: {average_failure_rate}, Polynomial Value: { 6*probability_p**6 -1*probability_p**7 -12*probability_p**5 +8*probability_p**4}")
 # Calculate the values of the polynomial p^4 - 4p^3 + 4p^2 for the same range of failure probabilities
 # polynomial_values = failure_probability_values**4 - 4 * failure_probability_values**3 + 4 * failure_probability_values**2
 # polynomial_values = failure_probability_values**2  - failure_probability_values**3 + failure_probability_values
-polynomial_values = failure_probability_values**5 - 4*failure_probability_values**4 + 4*failure_probability_values**3
+polynomial_values = 6*failure_probability_values**6 -1*failure_probability_values**7 -12*failure_probability_values**5 +8*failure_probability_values**4 #failure_probability_values**5 - 4*failure_probability_values**4 + 4*failure_probability_values**3
 
 # Plotting the failure rates and the polynomial
 plt.plot(failure_probability_values, average_failure_rates, label="Packet Arrival failure Rate")
-plt.plot(failure_probability_values, polynomial_values, label="p^5 -4p^4 +4p^3", linestyle='dashed')
+plt.plot(failure_probability_values, polynomial_values, label="-p^7 + 6p^6 - 12p^5 + 8p^4", linestyle='dashed')
 plt.xlabel("failure Probability (probability_p)")
 plt.ylabel("Values")
 plt.title(f"Packet Arrival failure Rate vs. Polynomial Comparison for {num_packets} packets")
