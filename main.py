@@ -135,20 +135,19 @@ def get_collection(all_min_cuts) :
         if len(cut_set) == minimum_size:
             M.append(cut_set)
     return K, L, M
-def display_collection(graph_name, K,L,M) :     
-    print("FOR GRAPH : ", graph_name)   
-    print("Here is K the collection of all s-t separating cut-sets: a cut-set is a subset of edges whose removal from the network disconnects nodes s and node t  ")
-    for cut_set in K:
-        # K.append(cut_set)
-        print(cut_set)
-    print("Here is L the collection of all minimal cut-sets in the graph : a minimal cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set : ")
-    for minimal_cut_set in L:
-        # L.append(minimal_cut_set)
-        print(minimal_cut_set)
-    print("Here is M the collection of all minimum cut-sets in the graph : a minimum cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set and is of minimum size : ")
-    for minimum_cut_set in M:
-        # M.append(minimum_cut_set)
-        print(minimum_cut_set)
+def display_collection(graph_name, K, L, M):
+    with open('log.txt', 'a') as log_file:
+        print("FOR GRAPH : ", graph_name, file=log_file)
+        print("Here is K the collection of all s-t separating cut-sets: a cut-set is a subset of edges whose removal from the network disconnects nodes s and node t  ", file=log_file)
+        for cut_set in K:
+            print(cut_set, file=log_file)
+        print("Here is L the collection of all minimal cut-sets in the graph : a minimal cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set : ", file=log_file)
+        for minimal_cut_set in L:
+            print(minimal_cut_set, file=log_file)
+        print("Here is M the collection of all minimum cut-sets in the graph : a minimum cut-set is a subset of edges whose removal from the network disconnects nodes s and node t and from which no subset can be called a cut-set and is of minimum size : ", file=log_file)
+        for minimum_cut_set in M:
+            print(minimum_cut_set, file=log_file)
+
 
 def get_n_m_values(G, M) :
     number_of_edges = G.number_of_edges() # noted n in Kschischang's paper
@@ -360,6 +359,71 @@ def create_dict_edge_probabilities(all_pathsets, one_edge_probability) :
             edge_probabilities[edge] = one_edge_probability
     return edge_probabilities
 
+def verify_number_already_attributed_to_edge(edge_to_test, random_number, edge_number_association, pathsets) :
+    # Verify if edge already has a random number associated with it
+    if edge_to_test not in edge_number_association:
+        # Associate the random number to it
+        edge_number_association[edge_to_test] = random_number
+        # print("Now edge:", edge_to_test, "has been attributed the random number:", random_number)
+    else:
+        a = 1
+        # Edge already has a random number associated with it
+        # print("Edge already has a random number:", edge_number_association[edge_to_test])
+    return edge_number_association
+
+
+def simulate_packet_arrival(source, destination, pathsets, edge_probabilities, num_packets):
+    failure_count = 0
+    failure_rates = []
+
+    for packet_number in range(1, num_packets + 1):
+        failure = 0
+        attempts = 0
+        tx_states = []
+        # For every packet
+        edge_number_association = {}
+        # Uniquely associate random failure probability to every edge of the pathsets
+        while attempts < len(pathsets):
+            # For each pathset or cutset
+            chosen_pathset = pathsets[attempts]
+            failure_probability = 1.0  # Initialize failure probability for the pathset
+            failure = 0
+            failure_state = []
+            
+            for edge in chosen_pathset:
+                edge_probability = edge_probabilities.get(edge, 0)  # Fetch edge probability or default to 0
+                random_number_list = numpy.random.uniform(0,1,1)
+                random_number = random_number_list[-1]
+                edge_number_association = verify_number_already_attributed_to_edge(edge, random_number, edge_number_association, pathsets)
+                if edge_number_association.get(edge) <= edge_probability:
+                    failure = 1                                        
+                    failure_state.append(failure)                    
+            if sum(failure_state) >= 1 :
+                # packet did not arrive!
+                #failure_count +=1
+                tx_states.append(0)
+                # break
+            if sum(failure_state) == 0 : 
+                # packet arrived and one transmission is successful!get out of while loop               
+                tx_states.append(1)
+                break
+                    
+            # if edge_probability == 0.38 :
+            #     edge_probability, 
+            # increment number of attempts and change the considered pathset/cutset :   
+            attempts += 1
+        if sum(tx_states) == 0:
+            # No transmission succeeded, increment failure_count
+            failure_count +=1
+        # if (packet_number == num_packets-1) :
+        #     print("HERE 2")
+        failure_rate = failure_count / num_packets
+        failure_rates.append(failure_rate)
+
+    return failure_rates
+
+
+
 ### CREATE THE GRAPH G0
 G = nx.MultiDiGraph(directed=True)
 # Nodes 
@@ -381,14 +445,32 @@ G.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), 
 G1 = nx.MultiDiGraph(directed=True)
 # Nodes 
 G1.add_node(1, subset='source')
-G1.add_node(4, subset='target')
+G1.add_node(3, subset='target')
 s_node1 = 1 # source node
 t_node1 = 4 # target node
 G1.add_node(2, subset='others')
 G1.add_node(3, subset='others')
+# G1.add_node(4, subset='others')
+# G1.add_node(5, subset='others')
+# G1.add_node(6, subset='others')
+# G1.add_node(7, subset='others')
+# G1.add_node(8, subset='others')
+# G1.add_node(9, subset='others')
+# G1.add_node(10, subset='others')
+# G1.add_node(11, subset='others')
+# G1.add_node(12, subset='others')
+# G1.add_node(13, subset='others')
+# G1.add_node(14, subset='others')
 # Edges 
-G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (3, 4, 0, {'capacity': "e5"}), (2, 4, 0, {'capacity': "e3"})])
-# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"})])
+G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (3, 4, 0, {'capacity': "e4"}), (2, 4, 0, {'capacity': "e3"})])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (3, 10, 0, {'capacity': "e310"}), (2, 4, 0, {'capacity': "e3"}), (2, 10, 0, {'capacity': "e210"}), (10, 4, 0, {'capacity': "e104"})])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (3, 5, 0, {'capacity': "e310"}), (2, 4, 0, {'capacity': "e3"}), (4, 6, 0, {'capacity': "e210"}), (5, 7, 0, {'capacity': "e211"}), (6, 7, 0, {'capacity': "e212"})])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"}), (3, 5, 0, {'capacity': "e310"}), (5, 7, 0, {'capacity': "e57"}), (7, 9, 0, {'capacity': "e79"}), (9, 11, 0, {'capacity': "e911"}), (11, 13, 0, {'capacity': "e1113"}), (13, 15, 0, {'capacity': "e1315"}),  (2, 4, 0, {'capacity': "e3"}), (4, 6, 0, {'capacity': "e210"}), (6, 8, 0, {'capacity': "e68"}), (8, 10, 0, {'capacity': "e810"}), (10, 12, 0, {'capacity': "e1012"}), (12, 14, 0, {'capacity': "e1214"}), (14, 15, 0, {'capacity': "e1415"}) ])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (1, 4, 0, {'capacity': "e3"}), (1, 5, 0, {'capacity': "e4"}), (2, 6, 0, {'capacity': "e5"}), (3, 6, 0, {'capacity': "e6"}), (4, 6, 0, {'capacity': "e7"}), (5, 6, 0, {'capacity': "e8"})])
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (2, 3, 0, {'capacity': "e2"})])
+
+
+# G1.add_edges_from([(1, 2, 0, {'capacity': "e1"}), (1, 3, 0, {'capacity': "e2"}), (2, 4, 0, {'capacity': "e3"}), (3, 4, 0, {'capacity': "e4"}), (4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
 # G1.add_edges_from([(4, 5, 0, {'capacity': "e5"}), (5, 6, 0, {'capacity': "e6"}), (5, 7, 0, {'capacity': "e7"}), (6, 8, 0, {'capacity': "e8"}), (7, 8, 0, {'capacity': "e9"})])
 
 ### CREATE THE GRAPH G2
@@ -427,7 +509,7 @@ display_collection("G", K,L,M)
 number_of_edges, minimum_cut_size = get_n_m_values(G, M)
 coefs = find_coefs(K)
 string_expanded_polynomial = get_polynomial_expression(coefs, minimum_cut_size, number_of_edges)
-p = numpy.linspace(0.01, 0.99, num=1000)
+p = numpy.linspace(0.01, 0.99, num=101)
 O_p, UpperB = OutagePolynomial.eval(p, minimum_cut_size, number_of_edges, coefs)
 # plt.scatter(p, O_p, marker="*") 
 OutagePolynomial.plot(p, O_p, UpperB, string_expanded_polynomial)
@@ -442,7 +524,7 @@ display_collection("G1", K1, L1, M1)
 number_of_edges1, minimum_cut_size1 = get_n_m_values(G1, M1)
 coefs1 = find_coefs(K1)
 string_expanded_polynomial1 = get_polynomial_expression(coefs1, minimum_cut_size1, number_of_edges1)
-p1 = numpy.linspace(0.01, 0.99, num=1000)
+p1 = numpy.linspace(0.01, 0.99, num=101)
 O_p1, UpperB1 = OutagePolynomial.eval(p1, minimum_cut_size1, number_of_edges1, coefs1)
 OutagePolynomial.plot(p1, O_p1, UpperB1, string_expanded_polynomial1)
 
@@ -457,7 +539,7 @@ display_collection("G2", K2, L2, M2)
 number_of_edges2, minimum_cut_size2 = get_n_m_values(G2, M2)
 coefs2 = find_coefs(K2)
 string_expanded_polynomial2 = get_polynomial_expression(coefs2, minimum_cut_size2, number_of_edges2)
-p2 = numpy.linspace(0.01, 0.99, num=1000)
+p2 = numpy.linspace(0.01, 0.99, num=101)
 O_p2, UpperB2 = OutagePolynomial.eval(p2, minimum_cut_size2, number_of_edges2, coefs2)
 OutagePolynomial.plot(p2, O_p2, UpperB2, string_expanded_polynomial2)
 
@@ -475,26 +557,27 @@ display_collection("G3", K3, L3, M3)
 number_of_edges3, minimum_cut_size3 = get_n_m_values(G3, M3)
 coefs3 = find_coefs(K3)
 string_expanded_polynomial3 = get_polynomial_expression(coefs3, minimum_cut_size3, number_of_edges3)
-p3 = numpy.linspace(0.01, 0.99, num=1000)
+p3 = numpy.linspace(0.01, 0.99, num=101)
 O_p3, UpperB3 = OutagePolynomial.eval(p3, minimum_cut_size3, number_of_edges3, coefs3)
 OutagePolynomial.plot(p3, O_p3, UpperB3, string_expanded_polynomial3)
 
+# THREE OUTAGE MULTIPLICATION
 O_p123 = multiply_two_lists(O_p1, O_p2, O_p3)
 UpperB123 = [] # Upper bound for this case is nothing for now, to be changed later on
 # plt.scatter(p2, O_p123, 'o:r') 
 # marker = '^k:'
-OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial multiplication", marker='k:')
+# OutagePolynomial.plot(p2, O_p123, UpperB2, " Three OUTAGE polynomial combination", marker='k:')
 
 # Graph 0
 # pathsets0 = compute_pathsets(G, s_node, t_node)
 # compute_and_visualize_pathsets(G, s_node, t_node, pathsets0)
 one_edge_probability = 0.7
 all_pathsets = compute_all_edge_pathsets(G, s_node, t_node)
-print("Here is the list of pathsets : ")
-print(all_pathsets[0])
-print(all_pathsets[1])
-print(all_pathsets[2])
-print(all_pathsets[3])
+# print("Here is the list of pathsets : ")
+# print(all_pathsets[0])
+# print(all_pathsets[1])
+# print(all_pathsets[2])
+# print(all_pathsets[3])
 edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_probability) 
 # compute_and_visualize_edge_pathset(G, all_pathsets[0], edge_probabilities, s_node, t_node)
 # compute_and_visualize_edge_pathsets_with_highlighted_arrows(G, s_node, t_node, all_pathsets, all_pathsets[0], one_edge_probability)
@@ -516,7 +599,71 @@ edge_probabilities = create_dict_edge_probabilities(all_pathsets[0], one_edge_pr
 # print("all_pathsets : ",all_pathsets[0])
 
 
+### MONTE CARLO CURV CREATION
 
+pathsets = []
+
+for pathset in all_pathsets:
+    converted_pathset = []
+    for i in range(len(pathset)):
+        # if i == 0:
+        converted_pathset.append(pathset[i])
+        # elif pathset[i][0] != converted_pathset[-1][1]:
+        #     converted_pathset.append(pathset[i])
+    pathsets.append(converted_pathset)
+
+print(pathsets)
+source = 1  # source and destination match node labels
+destination = 3
+num_packets = 50000
+
+# Vary the failure probability (probability_p) between 0 and 1
+failure_probability_values = p #numpy.linspace(0, 1, num=101)  # 101 values from 0 to 1
+
+# Extract edges and create the desired format
+edges = G.edges(keys=True)
+edge_dict = {(u, v): None for u, v, _ in edges}
+
+# Example printing the converted edge format
+for edge in edge_dict:
+    print(edge)
+
+
+average_failure_rates = []
+edge_probabilities = {}
+for probability_p in failure_probability_values:
+    for edge in edge_dict:
+        edge_probabilities[edge] = probability_p
+    # edge_probabilities = {
+    #     (1, 2): probability_p,
+    #     (2, 4): probability_p,
+    #     (1, 3): probability_p,
+    #     (3, 4): probability_p
+    # }
+    # if probability_p == 0.45 :
+        # print("HERE")
+    failure_rates = simulate_packet_arrival(source, destination, pathsets, edge_probabilities, num_packets)
+    average_failure_rate = failure_rates[-1]#sum(failure_rates) / len(failure_rates)
+    average_failure_rates.append(average_failure_rate)
+    print(f"Probability: {probability_p}, Simulated Failure Rate: {average_failure_rate}, Polynomial Value: {probability_p**9 -9*probability_p**8 +32*probability_p**7 -56*probability_p**6 +46*probability_p**5 -6*probability_p**4 -16*probability_p**3 +8*probability_p**2 +probability_p**1 }")
+
+# Calculate the values of the polynomial p^4 - 4p^3 + 4p^2 for the same range of failure probabilities
+polynomial_values = failure_probability_values**9 -9*failure_probability_values**8 +32*failure_probability_values**7 -56*failure_probability_values**6 +46*failure_probability_values**5 -6*failure_probability_values**4 -16*failure_probability_values**3 +8*failure_probability_values**2 +failure_probability_values**1 #failure_probability_values**4 -4*failure_probability_values**3 +4*failure_probability_values**2#failure_probability_values**9 -9*failure_probability_values**8 +32*failure_probability_values**7 -56*failure_probability_values**6 +46*failure_probability_values**5 -6*failure_probability_values**4 -16*failure_probability_values**3 +8*failure_probability_values**2 +failure_probability_values**1  #failure_probability_values**5 - 4*failure_probability_values**4 + 4*failure_probability_values**3
+# polynomial_values = 4*failure_probability_values**2 -2*failure_probability_values**3 -4*failure_probability_values**4 +4*failure_probability_values**5 -failure_probability_values**6
+
+# # Plotting the failure rates and the polynomial
+# plt.plot(failure_probability_values, average_failure_rates, label="Packet Arrival failure Rate")
+# plt.plot(failure_probability_values, polynomial_values, label="p^9 - 9p^8 + 32p^7 - 56p^6 + 46p^5 - 6p^4 - 16p^3 + 8p^2 + p", linestyle='dashed')
+# plt.xlabel("failure Probability (probability_p)")
+# plt.ylabel("Values")
+# plt.title(f"Packet Arrival failure Rate vs. Polynomial Comparison for {num_packets} packets")
+# plt.yscale('log')  # Set the y-axis to a logarithmic scale
+# plt.legend()
+# plt.grid(True)
+# plt.savefig(f"monte-carlo_failure_{num_packets}packets_TESTGRAPH_REAL.png")
+
+
+OutagePolynomial.plot(p, average_failure_rates, UpperB2, "Packet Arrival failure Rate", marker='k:')
 
 ######################################################### DRAWING THE GRAPH ################################################
 
